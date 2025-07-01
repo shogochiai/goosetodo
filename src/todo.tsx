@@ -39,10 +39,22 @@ const ScheduleManager = () => {
     // 実際の環境では new Date() を使用
     return new Date('2025-07-01');
   });
-  const [tasks, setTasks] = useState(initialTasks);
-  const [completedTasks, setCompletedTasks] = useState({});
-  const [taskMemos, setTaskMemos] = useState({});
-  const [backgroundLinks, setBackgroundLinks] = useState(defaultLinks);
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem('tasks');
+    return saved ? JSON.parse(saved) : initialTasks;
+  });
+  const [completedTasks, setCompletedTasks] = useState(() => {
+    const saved = localStorage.getItem('completedTasks');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [taskMemos, setTaskMemos] = useState(() => {
+    const saved = localStorage.getItem('taskMemos');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [backgroundLinks, setBackgroundLinks] = useState(() => {
+    const saved = localStorage.getItem('backgroundLinks');
+    return saved ? JSON.parse(saved) : defaultLinks;
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [currentView, setCurrentView] = useState('home');
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
@@ -52,33 +64,7 @@ const ScheduleManager = () => {
   const [editingMemo, setEditingMemo] = useState('');
   const [isComposing, setIsComposing] = useState(false);
 
-  // 実際の環境では以下のコメントを外してLocalStorageを使用
-  /*
-  useEffect(() => {
-    // LocalStorageから完了タスクを読み込み
-    const savedCompleted = localStorage.getItem('completedTasks');
-    if (savedCompleted) {
-      setCompletedTasks(JSON.parse(savedCompleted));
-    }
-    
-    // LocalStorageから背景資料リンクを読み込み
-    const savedLinks = localStorage.getItem('backgroundLinks');
-    if (savedLinks) {
-      setBackgroundLinks(JSON.parse(savedLinks));
-    }
-    
-    // LocalStorageからタスクメモを読み込み
-    const savedMemos = localStorage.getItem('taskMemos');
-    if (savedMemos) {
-      setTaskMemos(JSON.parse(savedMemos));
-    }
-    
-    // LocalStorageからタスクを読み込み
-    const savedTasks = localStorage.getItem('tasks');
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    }
-  }, []);
+  // LocalStorage save effects
 
   useEffect(() => {
     localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
@@ -95,7 +81,6 @@ const ScheduleManager = () => {
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
-  */
 
   // 日付フォーマット
   const formatDate = (date) => {
