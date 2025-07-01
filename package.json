@@ -1,0 +1,33 @@
+{
+  "name": "goosetodo",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test -c playwright-ct.config.ts",
+    "test:ui": "playwright test -c playwright-ct.config.ts --ui",
+    "test:debug": "playwright test -c playwright-ct.config.ts --debug",
+    "test:report": "playwright show-report",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/experimental-ct-react": "^1.53.2",
+    "@playwright/test": "^1.53.2",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "playwright": "^1.53.2",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.525.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
