@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Square, ExternalLink, Settings, Clipboard, Home, AlertCircle, Plus, X, Edit, Save, FileText } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Square, ExternalLink, Settings, Clipboard, Home, AlertCircle, Plus, X, Edit, Save, FileText, MessageSquare } from 'lucide-react';
 
 // 設定画面コンポーネント
 const SettingsView = ({ backgroundLinks, addBackgroundLink, updateBackgroundLink, deleteBackgroundLink, setCurrentView }) => (
@@ -99,20 +99,34 @@ const TaskDetailModal = ({ selectedTask, showTaskDetail, setShowTaskDetail, edit
           />
         </div>
         
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-between">
           <button
-            onClick={() => setShowTaskDetail(false)}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            onClick={() => {
+              const promptText = `現在私は「sss: Self-sovereign Solarpunk」という名前で、中央集権システムへの依存を断ち切り、食料、エネルギー、情報を自らの手に取り戻すことで破滅しない生存基盤を確立し、太陽エネルギーを基盤にテクノロジーと自然の調和を実現する持続可能な豊かさを追求し、AIの進歩を労働からの解放に活用するという趣旨で、外部システムの崩壊に備え、生活基盤の確保、労働の自動化、自律的コミュニティの形成を目指すということをしていて 、「スケーラブル自給自足モデル」という、日本の未利用資源を「労働力」という資本を用いて活用し、ガチョウを「生きたバイオリアクター」として土地を再生させながら、雑草を高密度のカロリー（食肉・脂）とエネルギー（バイオディーゼル燃料）に変換する、拡張可能かつ再生的な循環型自給自足モデルであるという趣旨で 、中核農場での雛の育成から衛星牧場での高密度放牧、加工、流通までの一連のサイクルを運用し、年間収量85羽/1000㎡を目標としているということをしています 。その中の「${selectedTask.content}」というタスクについて「${editingMemo}」という悩みを持っています。ネクストアクションを簡潔に200字程度で示してください。`;
+              navigator.clipboard.writeText(promptText).then(() => {
+                alert('プロンプトをクリップボードにコピーしました！');
+              });
+            }}
+            className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
           >
-            キャンセル
+            <MessageSquare size={16} />
+            <span>プロンプト</span>
           </button>
-          <button
-            onClick={saveMemo}
-            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            <Save size={16} />
-            <span>保存</span>
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowTaskDetail(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              キャンセル
+            </button>
+            <button
+              onClick={saveMemo}
+              className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              <Save size={16} />
+              <span>保存</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
