@@ -1,6 +1,182 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, CheckSquare, Square, ExternalLink, Settings, Clipboard, Home, AlertCircle, Plus, X, Edit, Save, FileText } from 'lucide-react';
 
+// 設定画面コンポーネント
+const SettingsView = ({ backgroundLinks, addBackgroundLink, updateBackgroundLink, deleteBackgroundLink, setCurrentView }) => (
+  <div className="max-w-4xl mx-auto p-6">
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-2xl font-bold">設定</h2>
+      <button
+        onClick={() => setCurrentView('home')}
+        className="text-gray-600 hover:text-gray-800"
+      >
+        <Home size={24} />
+      </button>
+    </div>
+    
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">背景資料リンク</h3>
+        <button
+          onClick={addBackgroundLink}
+          className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+          data-testid="add-link-button"
+        >
+          <Plus size={20} />
+          <span>リンクを追加</span>
+        </button>
+      </div>
+      
+      <div className="space-y-4">
+        {backgroundLinks.map(link => (
+          <div key={link.id} className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={link.name}
+              onChange={(e) => updateBackgroundLink(link.id, 'name', e.target.value)}
+              placeholder="リンク名"
+              className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="link-name-input"
+            />
+            <input
+              type="url"
+              value={link.url}
+              onChange={(e) => updateBackgroundLink(link.id, 'url', e.target.value)}
+              placeholder="URL"
+              className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="link-url-input"
+            />
+            <button
+              onClick={() => deleteBackgroundLink(link.id)}
+              className="text-red-600 hover:text-red-800"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// タスク詳細モーダルコンポーネント
+const TaskDetailModal = ({ selectedTask, showTaskDetail, setShowTaskDetail, editingMemo, setEditingMemo, saveMemo, getCategoryColor }) => {
+  if (!selectedTask || !showTaskDetail) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold">タスク詳細</h3>
+          <button
+            onClick={() => setShowTaskDetail(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(selectedTask.category)}`}>
+              {selectedTask.id}
+            </span>
+            <span className="text-sm text-gray-500">{selectedTask.phase}</span>
+            <span className="text-sm text-gray-500">{selectedTask.date}</span>
+          </div>
+          <p className="text-lg text-gray-800">{selectedTask.content}</p>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">メモ</label>
+          <textarea
+            value={editingMemo}
+            onChange={(e) => setEditingMemo(e.target.value)}
+            className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="6"
+            placeholder="このタスクに関するメモを入力してください..."
+            data-testid="task-memo-textarea"
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => setShowTaskDetail(false)}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          >
+            キャンセル
+          </button>
+          <button
+            onClick={saveMemo}
+            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            <Save size={16} />
+            <span>保存</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Overdueビューコンポーネント
+const OverdueView = ({ overdueTasks, setCurrentView, toggleTaskComplete, getCategoryColor, openTaskDetail }) => {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="text-red-500" size={24} />
+            <h2 className="text-2xl font-bold">期限切れタスク</h2>
+          </div>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Home size={24} />
+          </button>
+        </div>
+        
+        {overdueTasks.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">期限切れのタスクはありません</p>
+        ) : (
+          <div className="space-y-3">
+            {overdueTasks.map(task => (
+              <div
+                key={task.id}
+                className="flex items-start space-x-3 p-4 rounded-lg border bg-red-50 border-red-200"
+              >
+                <button
+                  onClick={() => toggleTaskComplete(task.id)}
+                  className="mt-1 flex-shrink-0"
+                >
+                  <Square className="text-gray-400" size={24} />
+                </button>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(task.category)}`}>
+                      {task.id}
+                    </span>
+                    <span className="text-sm text-red-600 font-medium">{task.date}</span>
+                  </div>
+                  <p className="text-gray-800">{task.content}</p>
+                </div>
+                <button
+                  onClick={() => openTaskDetail(task)}
+                  className="text-gray-500 hover:text-gray-700"
+                  data-testid="task-detail-button"
+                >
+                  <FileText size={20} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ScheduleManager = () => {
   // 初期タスクデータ
   const initialTasks = [
@@ -62,7 +238,6 @@ const ScheduleManager = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
   const [editingMemo, setEditingMemo] = useState('');
-  const [isComposing, setIsComposing] = useState(false);
 
   // LocalStorage save effects
 
@@ -190,7 +365,7 @@ const ScheduleManager = () => {
         category: newTask.category,
         phase: newTask.phase
       };
-      setTasks([...tasks, taskToAdd]);
+      setTasks(prev => [...prev, taskToAdd]);
       setNewTask({ content: '', category: 'A', phase: '追加タスク' });
       setShowNewTaskForm(false);
     }
@@ -199,23 +374,23 @@ const ScheduleManager = () => {
   // 背景資料リンクを追加
   const addBackgroundLink = () => {
     const newLink = {
-      id: Date.now(),
+      id: `link-${Date.now()}-${Math.random()}`,
       name: '',
       url: ''
     };
-    setBackgroundLinks([...backgroundLinks, newLink]);
+    setBackgroundLinks(prev => [...prev, newLink]);
   };
 
   // 背景資料リンクを更新
   const updateBackgroundLink = (id, field, value) => {
-    setBackgroundLinks(backgroundLinks.map(link => 
+    setBackgroundLinks(prev => prev.map(link => 
       link.id === id ? { ...link, [field]: value } : link
     ));
   };
 
   // 背景資料リンクを削除
   const deleteBackgroundLink = (id) => {
-    setBackgroundLinks(backgroundLinks.filter(link => link.id !== id));
+    setBackgroundLinks(prev => prev.filter(link => link.id !== id));
   };
 
   // タスク詳細を表示
@@ -236,209 +411,30 @@ const ScheduleManager = () => {
     }
   };
 
-  // Overdueビュー
-  const OverdueView = () => {
-    const overdueTasks = getOverdueTasks();
-    
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="text-red-500" size={24} />
-              <h2 className="text-2xl font-bold">期限切れタスク</h2>
-            </div>
-            <button
-              onClick={() => setCurrentView('home')}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <Home size={24} />
-            </button>
-          </div>
-          
-          {overdueTasks.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">期限切れのタスクはありません</p>
-          ) : (
-            <div className="space-y-3">
-              {overdueTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="flex items-start space-x-3 p-4 rounded-lg border bg-red-50 border-red-200"
-                >
-                  <button
-                    onClick={() => toggleTaskComplete(task.id)}
-                    className="mt-1 flex-shrink-0"
-                  >
-                    <Square className="text-gray-400" size={24} />
-                  </button>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(task.category)}`}>
-                        {task.id}
-                      </span>
-                      <span className="text-sm text-red-600 font-medium">{task.date}</span>
-                    </div>
-                    <p className="text-gray-800">{task.content}</p>
-                  </div>
-                  <button
-                    onClick={() => openTaskDetail(task)}
-                    className="text-gray-500 hover:text-gray-700"
-                    data-testid="task-detail-button"
-                  >
-                    <FileText size={20} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // 設定画面
-  const SettingsView = () => (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">設定</h2>
-        <button
-          onClick={() => setCurrentView('home')}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <Home size={24} />
-        </button>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">背景資料リンク</h3>
-          <button
-            onClick={addBackgroundLink}
-            className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
-            data-testid="add-link-button"
-          >
-            <Plus size={20} />
-            <span>リンクを追加</span>
-          </button>
-        </div>
-        
-        <div className="space-y-4">
-          {backgroundLinks.map(link => (
-            <div key={link.id} className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={link.name}
-                onChange={(e) => updateBackgroundLink(link.id, 'name', e.target.value)}
-                onCompositionStart={() => setIsComposing(true)}
-                onCompositionEnd={(e) => {
-                  setIsComposing(false);
-                  updateBackgroundLink(link.id, 'name', e.target.value);
-                }}
-                placeholder="リンク名"
-                className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                data-testid="link-name-input"
-                key={`link-name-${link.id}`}
-              />
-              <input
-                type="url"
-                value={link.url}
-                onChange={(e) => updateBackgroundLink(link.id, 'url', e.target.value)}
-                onCompositionStart={() => setIsComposing(true)}
-                onCompositionEnd={(e) => {
-                  setIsComposing(false);
-                  updateBackgroundLink(link.id, 'url', e.target.value);
-                }}
-                placeholder="URL"
-                className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                data-testid="link-url-input"
-                key={`link-url-${link.id}`}
-              />
-              <button
-                onClick={() => deleteBackgroundLink(link.id)}
-                className="text-red-600 hover:text-red-800"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  // タスク詳細モーダル
-  const TaskDetailModal = () => {
-    if (!selectedTask) return null;
-    
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold">タスク詳細</h3>
-            <button
-              onClick={() => setShowTaskDetail(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X size={24} />
-            </button>
-          </div>
-          
-          <div className="mb-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(selectedTask.category)}`}>
-                {selectedTask.id}
-              </span>
-              <span className="text-sm text-gray-500">{selectedTask.phase}</span>
-              <span className="text-sm text-gray-500">{selectedTask.date}</span>
-            </div>
-            <p className="text-lg text-gray-800">{selectedTask.content}</p>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">メモ</label>
-            <textarea
-              value={editingMemo}
-              onChange={(e) => setEditingMemo(e.target.value)}
-              onCompositionStart={() => setIsComposing(true)}
-              onCompositionEnd={(e) => {
-                setIsComposing(false);
-                setEditingMemo(e.target.value);
-              }}
-              className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="6"
-              placeholder="このタスクに関するメモを入力してください..."
-              data-testid="task-memo-textarea"
-              key={`memo-${selectedTask?.id || 'default'}`}
-            />
-          </div>
-          
-          <div className="flex justify-end space-x-2">
-            <button
-              onClick={() => setShowTaskDetail(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              キャンセル
-            </button>
-            <button
-              onClick={saveMemo}
-              className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              <Save size={16} />
-              <span>保存</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   // ビューの切り替え
   if (currentView === 'settings') {
-    return <SettingsView />;
+    return (
+      <SettingsView 
+        backgroundLinks={backgroundLinks}
+        addBackgroundLink={addBackgroundLink}
+        updateBackgroundLink={updateBackgroundLink}
+        deleteBackgroundLink={deleteBackgroundLink}
+        setCurrentView={setCurrentView}
+      />
+    );
   }
   
   if (currentView === 'overdue') {
-    return <OverdueView />;
+    const overdueTasks = getOverdueTasks();
+    return (
+      <OverdueView 
+        overdueTasks={overdueTasks}
+        setCurrentView={setCurrentView}
+        toggleTaskComplete={toggleTaskComplete}
+        getCategoryColor={getCategoryColor}
+        openTaskDetail={openTaskDetail}
+      />
+    );
   }
 
   const currentTasks = getCurrentDateTasks();
@@ -554,15 +550,9 @@ const ScheduleManager = () => {
                   type="text"
                   value={newTask.content}
                   onChange={(e) => setNewTask({ ...newTask, content: e.target.value })}
-                  onCompositionStart={() => setIsComposing(true)}
-                  onCompositionEnd={(e) => {
-                    setIsComposing(false);
-                    setNewTask({ ...newTask, content: e.target.value });
-                  }}
                   placeholder="タスクの内容を入力"
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   data-testid="task-input"
-                  key="new-task-content"
                 />
                 <div className="flex space-x-2">
                   <select
@@ -579,15 +569,9 @@ const ScheduleManager = () => {
                     type="text"
                     value={newTask.phase}
                     onChange={(e) => setNewTask({ ...newTask, phase: e.target.value })}
-                    onCompositionStart={() => setIsComposing(true)}
-                    onCompositionEnd={(e) => {
-                      setIsComposing(false);
-                      setNewTask({ ...newTask, phase: e.target.value });
-                    }}
                     placeholder="フェーズ"
                     className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     data-testid="phase-input"
-                    key="new-task-phase"
                   />
                   <button
                     onClick={addNewTask}
@@ -694,7 +678,15 @@ const ScheduleManager = () => {
       </main>
 
       {/* タスク詳細モーダル */}
-      {showTaskDetail && <TaskDetailModal />}
+      <TaskDetailModal 
+        selectedTask={selectedTask}
+        showTaskDetail={showTaskDetail}
+        setShowTaskDetail={setShowTaskDetail}
+        editingMemo={editingMemo}
+        setEditingMemo={setEditingMemo}
+        saveMemo={saveMemo}
+        getCategoryColor={getCategoryColor}
+      />
     </div>
   );
 };
