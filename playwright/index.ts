@@ -1,2 +1,3 @@
 // This file is required for Playwright component testing.
-// Don't worry about its contents, it's automatically generated.
+// Import the CSS for Tailwind styles
+import '../src/todo.css';

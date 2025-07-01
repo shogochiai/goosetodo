@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/experimental-ct-react';
 import React from 'react';
-import ScheduleManager from '../index.tsx';
+import ScheduleManager from '../src/todo.tsx';
 
 test.describe('Input Element Stability Tests', () => {
   test.beforeEach(async ({ page }) => {
